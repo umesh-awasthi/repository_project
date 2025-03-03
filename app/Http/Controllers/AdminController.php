@@ -92,6 +92,12 @@ class AdminController extends Controller
         return view('admin.editeRole', compact('role'));
     }
 
+    public function deleteRole($id)
+    {
+        $this->roleRepository->delete($id);
+        return redirect()->route('roles')->with('success', 'Role deleted successfully!');
+    }
+
     public function update(Request $request, $id)
     {
         $data = $request->validate([

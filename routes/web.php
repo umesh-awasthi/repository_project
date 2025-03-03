@@ -14,7 +14,7 @@ Route::post('/todos', [TodoController::class, 'store'])->name('todos.store');
 Route::get('/admin/role', [AdminController::class, 'show'])->name('roles');
 Route::get('/admin/role/{id}', [AdminController::class, 'edit'])->name('role.edit');
 Route::put('/admin/role/{id}', [AdminController::class, 'update'])->name('role.update');
-Route::delete('/admin/role/{id}', [AdminController::class, 'delete'])->name('roles.delete');
+Route::delete('/admin/role/{id}', [AdminController::class, 'deleteRole'])->name('roles.delete');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
