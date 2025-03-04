@@ -7,6 +7,15 @@
 
         <!-- Add more dashboard content here -->
         <div class="bg-white shadow rounded-lg p-6 mt-6">
+            {{-- <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Permissions</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                @foreach ($permissions as $permission)
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <span class="text-sm text-gray-700">{{ $permission }}</span>
+                    </div>
+                @endforeach
+            </div> --}}
+            
             <h2 class="text-xl font-semibold text-gray-700 mb-4">Quick Actions</h2>
             <div class="flex gap-4">
                 <a href="{{ route('admin.createRole') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
@@ -22,4 +31,3 @@
         </div>
     </div>
 @endsection
-

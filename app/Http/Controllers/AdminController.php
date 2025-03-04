@@ -216,15 +216,19 @@ class AdminController extends Controller
         // Extract role names correctly
         $roles = $user->roles->pluck('name')->toArray();
         
-        // print_r($roles); // Debugging
-        // die;
+        // Get permissions for the user's roles
+        $permissions = [];
+        foreach ($user->roles as $role) {
+            $permissions = array_merge($permissions, $role->permissions->pluck('name')->toArray());
+        }
+        $permissions = array_unique($permissions);
     
         if (in_array('admin', $roles)) {
-            return view('admin.dashboard'); // Redirect to admin dashboard
+            return view('admin.dashboard', ['permissions' => $permissions]);
         } elseif (in_array('agent', $roles)) {
-            return view('auth.dashboard'); // Redirect to agent dashboard
+            return view('auth.dashboard', ['permissions' => $permissions]);
         } else {
-            return view('admin.users.dashboard'); // Redirect to normal user dashboard
+            return view('admin.users.dashboard', ['permissions' => $permissions]);
         }
     }
     
