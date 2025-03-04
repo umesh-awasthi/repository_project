@@ -13,11 +13,11 @@
     <div class="w-64 bg-gray-900 text-white min-h-screen p-4">
         <h2 class="text-xl font-bold mb-4">Admin Panel</h2>
         <nav class="space-y-2">
-            <a href="#" class="block py-2 px-4 hover:bg-gray-700 rounded">Dashboard</a>
-            <a href="#" class="block py-2 px-4 hover:bg-gray-700 rounded">Users</a>
+            <a href={{route('dashboard')}} class="block py-2 px-4 hover:bg-gray-700 rounded">Dashboard</a>
+            <a href={{route('admin.users')}} class="block py-2 px-4 hover:bg-gray-700 rounded">Users</a>
             <a href={{route('roles')}} class="block py-2 px-4 hover:bg-gray-700 rounded">Roles</a>
 
-            <a href="#" class="block py-2 px-4 hover:bg-gray-700 rounded">Settings</a>
+            <a href={{route('admin.setting')}} class="block py-2 px-4 hover:bg-gray-700 rounded">Settings</a>
         </nav>
     </div>
     @yield('content')

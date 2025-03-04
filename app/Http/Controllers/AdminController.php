@@ -4,17 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Repositories\RoleRepositoryInterface;
 use App\Repositories\PermissionRepositoryInterface;
+use App\Repositories\UserRepositoryInterface;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     protected $roleRepository;
     protected $permissionRepository;
+    protected $userRepository;
 
-    public function __construct(RoleRepositoryInterface $roleRepository, PermissionRepositoryInterface $permissionRepository)
+    public function __construct(RoleRepositoryInterface $roleRepository, PermissionRepositoryInterface $permissionRepository , UserRepositoryInterface $userRepository)
     {
         $this->roleRepository = $roleRepository;
         $this->permissionRepository = $permissionRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function createRole()
@@ -30,7 +33,7 @@ class AdminController extends Controller
     {
         $roles = $this->roleRepository->all();
         $permissions = $this->permissionRepository->all();
-        return view('admin.index', compact('roles', 'permissions'));
+        return view('admin.assignPermissions', compact('roles', 'permissions'));
     }
 
     public function show()
@@ -74,17 +77,49 @@ class AdminController extends Controller
         $user->roles()->attach($data['role_id']);
         return redirect()->route('admin.index');
     }
-
+    // public function assignPermission(Request $request)
+    // {
+    //     $data = $request->validate([
+    //         'role_id' => 'required|exists:roles,id',
+    //         'permission_id' => 'required|exists:permissions,id',
+    //     ]);
+    //     $role = $this->roleRepository->find($data['role_id']);
+        
+    //     foreach ($data['permission_id'] as $permissionId) {
+    //         // Check if the combination already exists
+    //         if (!$role->permissions()->where('permission_id', $permissionId)->exists()) {
+    //             $role->permissions()->attach($permissionId);
+    //         }
+    //     }
+    //     return redirect()->route('admin.index',compact('role'))->with('success',"Permission assigened successfully!");
+    // }
     public function assignPermission(Request $request)
-    {
-        $data = $request->validate([
-            'role_id' => 'required|exists:roles,id',
-            'permission_id' => 'required|exists:permissions,id',
-        ]);
-        $role = $this->roleRepository->find($data['role_id']);
-        $role->permissions()->attach($data['permission_id']);
-        return redirect()->route('admin.index');
+{
+    $data = $request->validate([
+        'role_id' => 'required|exists:roles,id',
+        'permission_id' => 'required|array',
+        'permission_id.*' => 'exists:permissions,id',
+    ]);
+
+    $role = $this->roleRepository->find($data['role_id']);
+    $alreadyAssigned = [];
+    
+    foreach ($data['permission_id'] as $permissionId) {
+        // Check if permission is already assigned using repository
+        if ($this->permissionRepository->isPermissionAssignedToRole($role->id, $permissionId)) {
+            $alreadyAssigned[] = $permissionId;
+        } else {
+            $this->permissionRepository->assignPermissionToRole($role->id, $permissionId);
+        }
     }
+
+    if (!empty($alreadyAssigned)) {
+        return redirect()->back()->with('error', 'Some permissions are already assigned.');
+    }
+
+    return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
+}
+
 
     public function edit($id)
     {
@@ -98,6 +133,8 @@ class AdminController extends Controller
         return redirect()->route('roles')->with('success', 'Role deleted successfully!');
     }
 
+  
+
     public function update(Request $request, $id)
     {
         $data = $request->validate([
@@ -106,4 +143,87 @@ class AdminController extends Controller
         $this->roleRepository->update($id, $data);
         return redirect()->route('roles')->with('success', 'Role updated successfully!');
     }
+// User Repository 
+    public function showUsers()
+    {
+        $users = $this->userRepository->all();
+        return view('admin.users.userlist', compact('users'));
+    }
+    public function createuser()
+    {
+        $roles = $this->roleRepository->all();
+        return view('auth.register', compact('roles'));
+    }
+public function storeuser(Request $request)
+{
+    \Log::info('Incoming request data:', $request->all()); // Debugging statement
+
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users',
+        'password' => 'required|string|min:8|confirmed',
+        'role_id' => 'required|exists:roles,id', // Corrected from 'role' to 'role_id'
+
+
+
+        ]);
+        
+        $response = $this->userRepository->create($data);
+        if ($response === 'Email already exists.') {
+            return redirect()->back()->withErrors(['email' => $response])->withInput();
+        }
+        return redirect()->route('admin.users')->with('success', 'user created successfully!');}
+    public function edituser($id)
+    {
+        $user = $this->userRepository->edit($id);
+        $roles =$this->roleRepository->all();
+        return view('admin.users.edituser', compact('user', 'roles'));
+    }
+
+    public function deleteuser($id)
+    {
+        $this->userRepository->delete($id);
+        return redirect()->route('admin.users')->with('success', 'User  deleted successfully!');
+    }
+    public function updateuser(Request $request, $id)
+{
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'role_id' => 'required|exists:roles,id', // Ensure role_id exists in roles table
+    ]);
+
+    $this->userRepository->update($id, $data);
+
+    return redirect()->route('admin.users')->with('success', 'User updated successfully!');
+}
+
+
+
+    public function setting()
+    {
+        $roles = $this->roleRepository->all();
+        $permissions = $this->permissionRepository->all();
+        return view('admin.settings', compact('roles', 'permissions'));
+    }
+
+ 
+
+    public function dashboard()
+    {
+        return view('admin.dashboard');
+    }
+
+    public function viewPermissions()
+    {
+     
+        $permissions = $this->permissionRepository->all();
+        return view('admin.permissions', compact( 'permissions'));
+    }
+    public function deletePermission($id)
+    {
+        $this->permissionRepository->delete($id);
+        return redirect()->route('viewPermissions')->with('success', 'Permission  deleted successfully!');
+    }
+
 }

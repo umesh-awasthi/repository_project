@@ -34,15 +34,26 @@
                 <tbody>
                     @foreach ($roles as $role)
                         <tr class="{{ $loop->even ? 'bg-gray-100' : 'bg-white' }}">
-                            <td class="p-3 border">{{ $role->id }}</td>
-                            <td class="p-3 border">{{ $role->name }}</td>
-                            <td><a href={{route('role.edit', $role->id)}} class="block py-2 px-4 hover:bg-gray-700 rounded">Edit</a>
-                                <form action="{{ route('roles.delete', $role->id) }}" method="post" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="block py-2 px-4 hover:bg-gray-700 rounded">Delete</button>
-                                </form>
+                            <td class="p-3 border text-center">{{ $role->id }}</td>
+                            <td class="p-3 border text-center">{{ $role->name }}</td>
+                            <td class="p-3 border">
+                                <div class="flex gap-2 w-full"> 
+                                    <a href="{{ route('role.edit', $role->id) }}"  
+                                       class="bg-blue-500 text-white px-4 py-2 rounded flex-1 text-center hover:bg-blue-600 transition">
+                                       Edit
+                                    </a>
+                            
+                                    <form action="{{ route('roles.delete', $role->id) }}" method="post" class="flex-1">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"  
+                                                class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
+                            
                            
                         </tr>
                     @endforeach
