@@ -13,7 +13,7 @@ class AdminController extends Controller
     protected $permissionRepository;
     protected $userRepository;
 
-    public function __construct(RoleRepositoryInterface $roleRepository, PermissionRepositoryInterface $permissionRepository , UserRepositoryInterface $userRepository)
+    public function __construct(RoleRepositoryInterface $roleRepository, PermissionRepositoryInterface $permissionRepository, UserRepositoryInterface $userRepository)
     {
         $this->roleRepository = $roleRepository;
         $this->permissionRepository = $permissionRepository;
@@ -29,17 +29,24 @@ class AdminController extends Controller
         return view('admin.createPermission');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $roles = $this->roleRepository->all();
         $permissions = $this->permissionRepository->all();
-        return view('admin.assignPermissions', compact('roles', 'permissions'));
+        
+        $assignedPermissions = [];
+        if ($request->has('role_id')) {
+            $role = $this->roleRepository->find($request->role_id);
+            $assignedPermissions = $role->permissions->pluck('id')->toArray();
+        }
+
+        return view('admin.assignPermissions', compact('roles', 'permissions', 'assignedPermissions'));
     }
 
     public function show()
     {
         $roles = $this->roleRepository->all();
-       
+
         return view('admin.role', compact('roles'));
     }
 
@@ -48,7 +55,7 @@ class AdminController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
         ]);
-       
+
 
 
         $response = $this->roleRepository->create($data);
@@ -84,7 +91,7 @@ class AdminController extends Controller
     //         'permission_id' => 'required|exists:permissions,id',
     //     ]);
     //     $role = $this->roleRepository->find($data['role_id']);
-        
+
     //     foreach ($data['permission_id'] as $permissionId) {
     //         // Check if the combination already exists
     //         if (!$role->permissions()->where('permission_id', $permissionId)->exists()) {
@@ -102,23 +109,17 @@ class AdminController extends Controller
     ]);
 
     $role = $this->roleRepository->find($data['role_id']);
-    $alreadyAssigned = [];
-    
-    foreach ($data['permission_id'] as $permissionId) {
-        // Check if permission is already assigned using repository
-        if ($this->permissionRepository->isPermissionAssignedToRole($role->id, $permissionId)) {
-            $alreadyAssigned[] = $permissionId;
-        } else {
-            $this->permissionRepository->assignPermissionToRole($role->id, $permissionId);
-        }
+
+    if (!$role) {
+        return redirect()->back()->with('error', 'Role not found.');
     }
 
-    if (!empty($alreadyAssigned)) {
-        return redirect()->back()->with('error', 'Some permissions are already assigned.');
-    }
+    // Assign permissions without duplicating existing ones
+    $role->permissions()->syncWithoutDetaching($data['permission_id']);
 
     return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
 }
+
 
 
     public function edit($id)
@@ -133,7 +134,7 @@ class AdminController extends Controller
         return redirect()->route('roles')->with('success', 'Role deleted successfully!');
     }
 
-  
+
 
     public function update(Request $request, $id)
     {
@@ -143,7 +144,7 @@ class AdminController extends Controller
         $this->roleRepository->update($id, $data);
         return redirect()->route('roles')->with('success', 'Role updated successfully!');
     }
-// User Repository 
+    // User Repository 
     public function showUsers()
     {
         $users = $this->userRepository->all();
@@ -154,29 +155,30 @@ class AdminController extends Controller
         $roles = $this->roleRepository->all();
         return view('auth.register', compact('roles'));
     }
-public function storeuser(Request $request)
-{
-    \Log::info('Incoming request data:', $request->all()); // Debugging statement
+    public function storeuser(Request $request)
+    {
+        \Log::info('Incoming request data:', $request->all()); // Debugging statement
 
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users',
-        'password' => 'required|string|min:8|confirmed',
-        'role_id' => 'required|exists:roles,id', // Corrected from 'role' to 'role_id'
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role_id' => 'required|exists:roles,id', // Corrected from 'role' to 'role_id'
 
 
 
         ]);
-        
+
         $response = $this->userRepository->create($data);
         if ($response === 'Email already exists.') {
             return redirect()->back()->withErrors(['email' => $response])->withInput();
         }
-        return redirect()->route('admin.users')->with('success', 'user created successfully!');}
+        return redirect()->route('admin.users')->with('success', 'user created successfully!');
+    }
     public function edituser($id)
     {
         $user = $this->userRepository->edit($id);
-        $roles =$this->roleRepository->all();
+        $roles = $this->roleRepository->all();
         return view('admin.users.edituser', compact('user', 'roles'));
     }
 
@@ -186,17 +188,17 @@ public function storeuser(Request $request)
         return redirect()->route('admin.users')->with('success', 'User  deleted successfully!');
     }
     public function updateuser(Request $request, $id)
-{
-    $data = $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $id,
-        'role_id' => 'required|exists:roles,id', // Ensure role_id exists in roles table
-    ]);
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'role_id' => 'required|exists:roles,id', // Ensure role_id exists in roles table
+        ]);
 
-    $this->userRepository->update($id, $data);
+        $this->userRepository->update($id, $data);
 
-    return redirect()->route('admin.users')->with('success', 'User updated successfully!');
-}
+        return redirect()->route('admin.users')->with('success', 'User updated successfully!');
+    }
 
 
 
@@ -207,19 +209,56 @@ public function storeuser(Request $request)
         return view('admin.settings', compact('roles', 'permissions'));
     }
 
- 
-
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $user = $this->userRepository->find(auth()->id());
+    
+        // Extract role names correctly
+        $roles = $user->roles->pluck('name')->toArray();
+        
+        // print_r($roles); // Debugging
+        // die;
+    
+        if (in_array('admin', $roles)) {
+            return view('admin.dashboard'); // Redirect to admin dashboard
+        } elseif (in_array('agent', $roles)) {
+            return view('auth.dashboard'); // Redirect to agent dashboard
+        } else {
+            return view('admin.users.dashboard'); // Redirect to normal user dashboard
+        }
     }
+    
+
+
+    // public function dashboard()
+// {
+//     $user = $this->userRepository->find(auth()->id()); // Get the currently authenticated user using the repository
+
+    //     if ($user->role === 'admin') {
+//         return view('admin.dashboard'); // Redirect to admin dashboard
+//     } elseif ($user->role === 'agent') {
+//         return view('auth.dashboard'); // Redirect to agent dashboard
+//     } else {
+//         return view('admin.users.dashboard'); // Redirect to normal user dashboard
+//     }
+// }
+
 
     public function viewPermissions()
     {
-     
         $permissions = $this->permissionRepository->all();
-        return view('admin.permissions', compact( 'permissions'));
+        return view('admin.permissions', compact('permissions'));
     }
+
+    public function getPermissions($roleId)
+    {
+        $role = $this->roleRepository->find($roleId);
+        if (!$role) {
+            return response()->json([]);
+        }
+        return response()->json($role->permissions->pluck('id')->toArray());
+    }
+
     public function deletePermission($id)
     {
         $this->permissionRepository->delete($id);

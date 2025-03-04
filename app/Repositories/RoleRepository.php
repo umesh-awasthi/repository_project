@@ -20,6 +20,7 @@ class RoleRepository implements RoleRepositoryInterface
         }
         return Role::create($data);
     }
+
     public function edit($id)
     {
         return Role::findOrFail($id);
@@ -42,12 +43,12 @@ class RoleRepository implements RoleRepositoryInterface
         return Role::destroy($id);
     }
 
-    public function Permissions()
+    public function permissions()
     {
         return Permission::all();
     }
 
-    public function rolls()
+    public function roles()
     {
         return Role::all();
     }

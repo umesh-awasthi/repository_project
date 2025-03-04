@@ -1,10 +1,14 @@
 <?php
 
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TodoController\TodoController;
 use App\Http\Controllers\AdminController;
 
 // Web Routes
+Route::get('/', function () {
+    return view('auth.login');
+});
 Route::get('/todos', [TodoController::class, 'index'])->name('todos.index');
 Route::get('/todos/create', [TodoController::class, 'create'])->name('todos.create');
 Route::post('/todos', [TodoController::class, 'store'])->name('todos.store');
@@ -32,10 +36,12 @@ Route::get('/admin/permissions', [AdminController::class, 'createPermission'])->
 Route::post('/admin/permissions', [AdminController::class, 'storePermission']);
 Route::delete('/admin/permissions/{id}', [AdminController::class, 'deletePermission'])->name('deletePermission');
 Route::post('/admin/assign-role', [AdminController::class, 'assignRole'])->name('admin.assignRole');
-
+Route::get('/todos', [TodoController::class, 'index'])->name('todos.list');
 Route::get('/todos/{id}/edit', [TodoController::class, 'edit'])->name('todos.edit');
 Route::put('/todos/{id}', [TodoController::class, 'update'])->name('todos.update');
 Route::delete('/todos/{id}', [TodoController::class, 'destroy'])->name('todos.destroy');
 
 // New Dashboard Route
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+Route::get('/admin/get-permissions/{roleId}', [AdminController::class, 'getPermissions'])->name('admin.getPermissions');
+Route::post('/login', [RegisterController::class, 'login'])->name('login');

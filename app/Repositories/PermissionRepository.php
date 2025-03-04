@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Repositories;
-use Illuminate\Support\Facades\DB;
+
 use App\Models\Permission;
+use App\Models\Role;
 
 class PermissionRepository implements PermissionRepositoryInterface
 {
@@ -17,6 +18,7 @@ class PermissionRepository implements PermissionRepositoryInterface
         if (Permission::where('name', $data['name'])->exists()) {
             return 'Permission already exists.';
         }
+
         return Permission::create($data);
     }
 
@@ -35,24 +37,24 @@ class PermissionRepository implements PermissionRepositoryInterface
     public function delete($id)
     {
         $permission = $this->find($id);
-        $permission->delete();
+        return $permission->delete(); // Return true/false
     }
+
+    /**
+     * Check if a permission is already assigned to a role.
+     */
     public function isPermissionAssignedToRole($roleId, $permissionId)
-{
-    return DB::table('permission_role')
-        ->where('role_id', $roleId)
-        ->where('permission_id', $permissionId)
-        ->exists();
-}
+    {
+        $role = Role::findOrFail($roleId);
+        return $role->permissions()->where('permissions.id', $permissionId)->exists();
+    }
 
-public function assignPermissionToRole($roleId, $permissionId)
-{
-    return DB::table('permission_role')->insert([
-        'role_id' => $roleId,
-        'permission_id' => $permissionId,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-}
-
+    /**
+     * Assign a permission to a role.
+     */
+    public function assignPermissionToRole($roleId, $permissionId)
+    {
+        $role = Role::findOrFail($roleId);
+        $role->permissions()->syncWithoutDetaching([$permissionId]); // Prevent duplicates
+    }
 }

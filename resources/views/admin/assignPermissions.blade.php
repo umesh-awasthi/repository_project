@@ -4,10 +4,15 @@
     <div class="flex-1 p-8">
         <h2 class="text-2xl font-bold text-gray-700 mb-4">Assign Permissions to Role</h2>
 
-        <!-- Success Message -->
+        <!-- Success & Error Messages -->
         @if(session('success'))
             <div class="bg-green-500 text-white p-3 rounded mb-4">
                 {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="bg-red-500 text-white p-3 rounded mb-4">
+                {{ session('error') }}
             </div>
         @endif
 
@@ -18,19 +23,24 @@
                     <label for="role_id" class="block text-sm font-medium text-gray-700">Select Role</label>
                     <select name="role_id" id="role_id"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 p-2">
+                        <option value="">-- Select Role --</option>
                         @foreach ($roles as $role)
-                            <option value="{{ $role->id }}">{{ $role->name }}</option>
+                            <option value="{{ $role->id }}" 
+                                {{ old('role_id', request('role_id')) == $role->id ? 'selected' : '' }}>
+                                {{ $role->name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Select Permissions</label>
-                    <div class="bg-gray-100 p-3 rounded-lg shadow-sm">
+                    <div class="bg-gray-100 p-3 rounded-lg shadow-sm" id="permissions-container">
                         @foreach ($permissions as $permission)
                             <div class="flex items-center mb-2">
                                 <input type="checkbox" name="permission_id[]" value="{{ $permission->id }}" 
-                                    class="mr-2 accent-blue-500">
+                                    class="mr-2 accent-blue-500 permission-checkbox"
+                                    {{ in_array($permission->id, $assignedPermissions ?? []) ? 'checked' : '' }}>
                                 <label class="text-sm text-gray-600">{{ $permission->name }}</label>
                             </div>
                         @endforeach
@@ -44,4 +54,20 @@
             </form>
         </div>
     </div>
+
+    <!-- AJAX Script for Dynamic Permission Fetching -->
+    <script>
+        document.getElementById('role_id').addEventListener('change', function () {
+            let roleId = this.value;
+            if (roleId) {
+                fetch(`/admin/get-permissions/${roleId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+                            checkbox.checked = data.includes(parseInt(checkbox.value));
+                        });
+                    });
+            }
+        });
+    </script>
 @endsection
