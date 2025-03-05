@@ -13,13 +13,13 @@
 
         <!-- Action Buttons -->
         <div class="flex justify-end mb-4">
-            @if (in_array('create_user', $permissions))
-                <a href="{{ route('agent.registeruser') }}"
-                    class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
-                    Add New User
-                </a>
+            @if (in_array('user_create',$permissions))
+            <a href="{{ route('agent.registeruser') }}" 
+               class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
+                Add New User
+            </a>
             @endif
-
+            
         </div>
 
         <!-- Table -->
@@ -39,29 +39,30 @@
                             <td class="p-3 border">{{ $user->id }}</td>
                             <td class="p-3 border">{{ $user->name }}</td>
                             <td class="p-3 border">{{ $user->email }}</td>
-                            <td class="p-3 border">
-                                <div class="flex gap-2">
-                                    @if (in_array('edit_user', $permissions))
-                                        <a href="{{ route('agent.edituser', $user->id) }}"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded w-full text-center hover:bg-blue-600 transition">
-                                            Edit
-                                        </a>
-                                    @endif
-                                    @if (in_array('delete_user', $permissions))
-                                        <form action="{{ route('agent.deleteuser', $user->id) }}" method="POST"
-                                            class="w-full">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition"
+                            <td class="p-3 border flex gap-2">
+                                
+                                <!-- Edit Button -->
+                                @if (in_array('user_edit',$permissions))
+                                    <a href="{{ route('agent.edituser', $user->id) }}" 
+                                    class="bg-blue-500 text-white px-4 py-2 rounded text-center hover:bg-blue-600 transition">
+                                        Edit
+                                    </a>
+                                @endif
+                                @if (in_array('user_delete',$permissions))
+                                    <form action="{{ route('agent.deleteuser', $user->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="bg-red-500 text-white px-4 py-2 rounded text-center hover:bg-red-600 transition"
                                                 onclick="return confirm('Are you sure?')">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
+                                            Delete
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
-
+                             
+                                <!-- Delete Button -->
+                              
                         </tr>
                     @endforeach
                 </tbody>

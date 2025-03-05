@@ -38,18 +38,23 @@
                             <td class="p-3 border">{{ $user->email }}</td>
                             <td class="p-3 border">
                                 <div class="flex gap-2"> 
-                                    <a href="{{ route('admin.user.edit', $user->id) }}" 
-                                        class="bg-blue-500 text-white px-4 py-2 rounded w-full text-center hover:bg-blue-600 transition">
-                                        Edit
-                                    </a>
-                                    <form action="{{ route('admin.user.delete', $user->id) }}" method="POST" class="w-full">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                            class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition">
-                                            Delete
-                                        </button>
-                                    </form>
+                                  
+                                        <a href="{{ route('admin.user.edit', $user->id) }}" 
+                                            class="bg-blue-500 text-white px-4 py-2 rounded w-full text-center hover:bg-blue-600 transition">
+                                            Edit
+                                        </a>
+                              
+                                 
+                                        <form action="{{ route('admin.user.delete', $user->id) }}" method="POST" class="w-full">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition"
+                                                onclick="return confirm('Are you sure you want to delete this user?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                              
                                 </div>
                             </td>
                             

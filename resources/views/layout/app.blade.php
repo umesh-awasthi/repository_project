@@ -24,12 +24,12 @@
             @endif
             
             <!-- Users -->
-            @if(in_array('view_users', $permissions))
+            @if(in_array('user_view', $permissions))
                 <a href="{{ route('agent.userlist') }}" class="block py-2 px-4 hover:bg-gray-700 rounded">Users</a>
             @endif
             
             <!-- Roles -->
-            @if(in_array('view_roles', $permissions))
+            @if(in_array('role_view', $permissions))
                 <a href="{{ route('roles') }}" class="block py-2 px-4 hover:bg-gray-700 rounded">Roles</a>
             @endif
             
@@ -39,7 +39,7 @@
             @endif
 
             <!-- Todos -->
-            @if(in_array('view_todos', $permissions))
+            @if(in_array('todo_view', $permissions))
                 <a href="{{ route('todos.list') }}" class="block py-2 px-4 hover:bg-gray-700 rounded">Todos</a>
             @endif
         </nav>

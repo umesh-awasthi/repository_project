@@ -1,4 +1,4 @@
-{{-- @extends('admin.layouts.adminlayout')
+@extends('admin.layouts.adminlayout')
 
 @section('content')
     <div class="flex-1 p-8">
@@ -70,7 +70,10 @@
             }
         });
     </script>
-@endsection --}}
+@endsection
+
+
+
 {{-- @extends('admin.layouts.adminlayout')
 
 @section('content')
@@ -190,8 +193,10 @@
             });
         });
     </script>
-@endsection --}}
-@extends('admin.layouts.adminlayout')
+{{-- @endsection --}}
+
+
+{{-- @extends('admin.layouts.adminlayout')
 
 @section('content')
     <div class="flex-1 p-8">
@@ -324,6 +329,6 @@
             });
         });
     </script>
-@endsection
+@endsection  --}}
 
 

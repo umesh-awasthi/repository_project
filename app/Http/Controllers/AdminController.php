@@ -123,7 +123,7 @@ public function assignPermission(Request $request)
 {
     $data = $request->validate([
         'role_id' => 'required|exists:roles,id',
-        'permission_id' => 'required|array',
+        'permission_id' => 'array', // Make it optional to allow removing all permissions
         'permission_id.*' => 'exists:permissions,id',
     ]);
 
@@ -133,8 +133,8 @@ public function assignPermission(Request $request)
         return redirect()->back()->with('error', 'Role not found.');
     }
 
-    // Assign permissions without duplicating existing ones
-    $role->permissions()->syncWithoutDetaching($data['permission_id']);
+    // Use sync() to update permissions (add new & remove unchecked)
+    $role->permissions()->sync($data['permission_id'] ?? []);
 
     // Fetch updated permissions for the role
     $permissions = $role->permissions()->pluck('name')->unique()->toArray();
@@ -142,8 +142,9 @@ public function assignPermission(Request $request)
     // Store in session
     session(['user_permissions' => $permissions]);
 
-    return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
+    return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
 }
+
 
 
 
@@ -173,6 +174,7 @@ public function assignPermission(Request $request)
     public function showUsers()
     {
         $users = $this->userRepository->all();
+        
         return view('admin.users.userlist', compact('users'));
     }
     public function createuser()
