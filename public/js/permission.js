@@ -68,15 +68,18 @@ document.addEventListener('DOMContentLoaded', function () {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": csrfToken
+                "X-CSRF-TOKEN": csrfToken,
+                "X-Requested-With": "XMLHttpRequest" 
             },
             body: JSON.stringify({ role_id: roleId, permission_id: permissions })
         })
         .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(text); });
+            console.log(response.ok);
+            if (response.ok) {
+                return response.json();
             }
-            return response.json();
+            
+            return response.text().then(text => { throw new Error(text); });
         })
         .then(data => {
             console.log("Permissions Updated:", data);
@@ -96,10 +99,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fetch(`/admin/get-permissions/${roleId}`)
             .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text); });
+                if (response.ok) {
+                    return response.json();
+                    
                 }
-                return response.json();
+                return response.text().then(text => { throw new Error(text); });
             })
             .then(data => {
                 document.querySelectorAll('.child-checkbox').forEach(checkbox => {

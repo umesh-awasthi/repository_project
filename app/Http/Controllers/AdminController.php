@@ -149,33 +149,34 @@ public function assignPermission(Request $request)
 {
     $request->validate([
         'role_id' => 'required|exists:roles,id',
-        'permission_id' => 'nullable|array', // Allows empty array (removing all permissions)
+        'permission_id' => 'nullable|array',
         'permission_id.*' => 'exists:permissions,id',
     ]);
 
     $role = $this->roleRepository->find($request->role_id);
 
     if (!$role) {
-        return $request->ajax()
+        return $request->expectsJson()
             ? response()->json(['error' => 'Role not found'], 404)
             : redirect()->back()->with('error', 'Role not found.');
     }
 
-    // Sync permissions (removes unchecked, adds new ones)
+    // Sync permissions
     $role->permissions()->sync($request->permission_id ?? []);
 
     // Get updated permissions
     $permissions = $role->permissions()->pluck('name')->unique()->toArray();
 
-    // Update session only if it's a normal request
-    if (!$request->ajax()) {
-        session(['user_permissions' => $permissions]);
-        return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
+    // Ensure AJAX requests always return JSON
+    if ($request->expectsJson()) {
+        return response()->json(['success' => 'Permissions updated successfully', 'permissions' => $permissions]);
     }
 
-    // Return JSON response for AJAX
-    return response()->json(['success' => 'Permissions updated successfully', 'permissions' => $permissions]);
+    // Redirect for normal form submissions
+    session(['user_permissions' => $permissions]);
+    return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
 }
+
 
 
 
