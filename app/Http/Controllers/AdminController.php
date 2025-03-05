@@ -119,31 +119,64 @@ class AdminController extends Controller
 
 //     return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
 // }
+// all work currect
+// public function assignPermission(Request $request)
+// {
+//     $data = $request->validate([
+//         'role_id' => 'required|exists:roles,id',
+//         'permission_id' => 'array', // Make it optional to allow removing all permissions
+//         'permission_id.*' => 'exists:permissions,id',
+//     ]);
+
+//     $role = $this->roleRepository->find($data['role_id']);
+
+//     if (!$role) {
+//         return redirect()->back()->with('error', 'Role not found.');
+//     }
+
+//     // Use sync() to update permissions (add new & remove unchecked)
+//     $role->permissions()->sync($data['permission_id'] ?? []);
+
+//     // Fetch updated permissions for the role
+//     $permissions = $role->permissions()->pluck('name')->unique()->toArray();
+
+//     // Store in session
+//     session(['user_permissions' => $permissions]);
+
+//     return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
+// }
 public function assignPermission(Request $request)
 {
-    $data = $request->validate([
+    $request->validate([
         'role_id' => 'required|exists:roles,id',
-        'permission_id' => 'array', // Make it optional to allow removing all permissions
+        'permission_id' => 'nullable|array', // Allows empty array (removing all permissions)
         'permission_id.*' => 'exists:permissions,id',
     ]);
 
-    $role = $this->roleRepository->find($data['role_id']);
+    $role = $this->roleRepository->find($request->role_id);
 
     if (!$role) {
-        return redirect()->back()->with('error', 'Role not found.');
+        return $request->ajax()
+            ? response()->json(['error' => 'Role not found'], 404)
+            : redirect()->back()->with('error', 'Role not found.');
     }
 
-    // Use sync() to update permissions (add new & remove unchecked)
-    $role->permissions()->sync($data['permission_id'] ?? []);
+    // Sync permissions (removes unchecked, adds new ones)
+    $role->permissions()->sync($request->permission_id ?? []);
 
-    // Fetch updated permissions for the role
+    // Get updated permissions
     $permissions = $role->permissions()->pluck('name')->unique()->toArray();
 
-    // Store in session
-    session(['user_permissions' => $permissions]);
+    // Update session only if it's a normal request
+    if (!$request->ajax()) {
+        session(['user_permissions' => $permissions]);
+        return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
+    }
 
-    return redirect()->route('admin.index')->with('success', 'Permissions updated successfully!');
+    // Return JSON response for AJAX
+    return response()->json(['success' => 'Permissions updated successfully', 'permissions' => $permissions]);
 }
+
 
 
 
