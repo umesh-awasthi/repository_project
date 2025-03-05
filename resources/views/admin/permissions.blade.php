@@ -50,7 +50,8 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                            class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition">
+                                            class="bg-red-500 text-white px-4 py-2 rounded w-full text-center hover:bg-red-600 transition"
+                                            onclick="return confirm('Are you sure you want to delete this permission?')">
                                             Delete
                                         </button>
                                     </form>

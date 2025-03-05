@@ -1,4 +1,4 @@
-@extends('admin.layouts.adminlayout')
+@extends('layout.app')
 
 @section('content')
     <div class="flex-1 p-8">
@@ -9,7 +9,9 @@
             <div class="bg-green-500 text-white p-3 rounded mb-4">
                 {{ session('success') }}
             </div>
-        @elseif (session('error'))
+        @endif
+
+        @if (session('error'))
             <div class="bg-red-500 text-white p-3 rounded mb-4">
                 {{ session('error') }}
             </div>

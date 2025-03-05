@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\agentcontroller;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TodoController\TodoController;
 use App\Http\Controllers\AdminController;
+
 
 // Web Routes
 Route::get('/', function () {
@@ -44,4 +46,14 @@ Route::delete('/todos/{id}', [TodoController::class, 'destroy'])->name('todos.de
 // New Dashboard Route
 Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 Route::get('/admin/get-permissions/{roleId}', [AdminController::class, 'getPermissions'])->name('admin.getPermissions');
+Route::get('/auth/userpermission',[AdminController::class,'viewAuthPermissions'])->name('viewAuthPermissions');
 Route::post('/login', [RegisterController::class, 'login'])->name('login');
+Route::get('/logout', [RegisterController::class, 'logout'])->name('logout');
+
+// auth user (agent)
+Route::get('/agent/register', [agentController::class, 'createuser'])->name('agent.registeruser');
+Route::post('/agent/register', [agentController::class, 'storeuser'])->name('agent.adduser');
+Route::get('/agent/userlist',[agentcontroller::class,'showUsers'])->name('agent.userlist');
+Route::get('/agent/useredit{id}',[agentcontroller::class,'edituser'])->name('agent.edituser');
+Route::put('/agent/userupdate/{id}',[agentcontroller::class,'updateuser'])->name('agent.updateuser');
+Route::delete('/agent/userdelete{id}',[agentcontroller::class,'deleteuser'])->name('agent.deleteuser');

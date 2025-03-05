@@ -52,4 +52,29 @@ class RoleRepository implements RoleRepositoryInterface
     {
         return Role::all();
     }
+
+    /**
+     * Assign permissions to a role.
+     */
+    public function assignPermissions($roleId, array $permissionIds)
+    {
+        $role = $this->find($roleId);
+        $role->permissions()->syncWithoutDetaching($permissionIds); // Avoid duplicates
+    }
+
+    /**
+     * Get permissions assigned to a specific role.
+     */
+    public function getRolePermissions($roleId)
+    {
+        return $this->find($roleId)->permissions;
+    }
+
+    /**
+     * Get roles assigned to a specific user.
+     */
+    public function getUserRoles($user)
+    {
+        return $user->roles; // Assuming a many-to-many relationship
+    }
 }

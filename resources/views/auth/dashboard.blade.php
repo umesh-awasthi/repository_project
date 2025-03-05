@@ -35,6 +35,11 @@
                         Manage Roles & Permissions
                     </a> 
                 @endif
+                @if(in_array('view_users', $permissions))
+                    <a href="{{ route('agent.userlist') }}" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
+                       View User
+                    </a> 
+                @endif
             </div>
         </div>
     </div>

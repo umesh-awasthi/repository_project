@@ -100,7 +100,26 @@ class AdminController extends Controller
     //     }
     //     return redirect()->route('admin.index',compact('role'))->with('success',"Permission assigened successfully!");
     // }
-    public function assignPermission(Request $request)
+//     public function assignPermission(Request $request)
+// {
+//     $data = $request->validate([
+//         'role_id' => 'required|exists:roles,id',
+//         'permission_id' => 'required|array',
+//         'permission_id.*' => 'exists:permissions,id',
+//     ]);
+
+//     $role = $this->roleRepository->find($data['role_id']);
+
+//     if (!$role) {
+//         return redirect()->back()->with('error', 'Role not found.');
+//     }
+
+//     // Assign permissions without duplicating existing ones
+//     $role->permissions()->syncWithoutDetaching($data['permission_id']);
+
+//     return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
+// }
+public function assignPermission(Request $request)
 {
     $data = $request->validate([
         'role_id' => 'required|exists:roles,id',
@@ -116,6 +135,12 @@ class AdminController extends Controller
 
     // Assign permissions without duplicating existing ones
     $role->permissions()->syncWithoutDetaching($data['permission_id']);
+
+    // Fetch updated permissions for the role
+    $permissions = $role->permissions()->pluck('name')->unique()->toArray();
+
+    // Store in session
+    session(['user_permissions' => $permissions]);
 
     return redirect()->route('admin.index')->with('success', 'Permissions assigned successfully!');
 }
@@ -226,6 +251,7 @@ class AdminController extends Controller
         if (in_array('admin', $roles)) {
             return view('admin.dashboard', ['permissions' => $permissions]);
         } elseif (in_array('agent', $roles)) {
+        
             return view('auth.dashboard', ['permissions' => $permissions]);
         } else {
             return view('admin.users.dashboard', ['permissions' => $permissions]);
@@ -252,6 +278,11 @@ class AdminController extends Controller
     {
         $permissions = $this->permissionRepository->all();
         return view('admin.permissions', compact('permissions'));
+    }
+    // auth layout permissions
+    public function viewAuthPermissions(){
+        $permissions = $this->permissionRepository->all();
+        return view('layout.app', compact('permissions'));
     }
 
     public function getPermissions($roleId)

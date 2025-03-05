@@ -45,8 +45,9 @@ class PermissionRepository implements PermissionRepositoryInterface
      */
     public function isPermissionAssignedToRole($roleId, $permissionId)
     {
-        $role = Role::findOrFail($roleId);
-        return $role->permissions()->where('permissions.id', $permissionId)->exists();
+        return Role::whereHas('permissions', function ($query) use ($permissionId) {
+            $query->where('permissions.id', $permissionId);
+        })->where('id', $roleId)->exists();
     }
 
     /**
@@ -56,5 +57,15 @@ class PermissionRepository implements PermissionRepositoryInterface
     {
         $role = Role::findOrFail($roleId);
         $role->permissions()->syncWithoutDetaching([$permissionId]); // Prevent duplicates
+    }
+
+    /**
+     * Get only assigned permissions for the given roles.
+     */
+    public function getPermissionsByRoles($roles)
+    {
+        return Permission::whereHas('roles', function ($query) use ($roles) {
+            $query->whereIn('roles.id', $roles->pluck('id'));
+        })->get();
     }
 }

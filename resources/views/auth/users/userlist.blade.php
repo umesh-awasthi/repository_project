@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="flex-1 p-8">
-        <h1 class="text-2xl font-bold text-gray-700 mb-4">Todo List</h1>
+        <h1 class="text-2xl font-bold text-gray-700 mb-4">User List</h1>
 
         <!-- Success Message -->
         @if (session('success'))
@@ -11,47 +11,45 @@
             </div>
         @endif
 
-        <!-- Action Button -->
+        <!-- Action Buttons -->
         <div class="flex justify-end mb-4">
-            @if (in_array('create', $permissions))
-                <a href="{{ route('todos.create') }}"
+            @if (in_array('create_user', $permissions))
+                <a href="{{ route('agent.registeruser') }}"
                     class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition">
-                    Create New Todo
+                    Add New User
                 </a>
             @endif
 
         </div>
 
-        <!-- Todo Table -->
+        <!-- Table -->
         <div class="bg-white shadow rounded-lg p-4">
             <table class="w-full border-collapse border border-gray-300">
                 <thead>
                     <tr class="bg-gray-800 text-white">
                         <th class="p-3 border">ID</th>
-                        <th class="p-3 border">Title</th>
+                        <th class="p-3 border">Name</th>
+                        <th class="p-3 border">Email</th>
                         <th class="p-3 border">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($todos as $todo)
+                    @foreach ($users as $user)
                         <tr class="{{ $loop->even ? 'bg-gray-100' : 'bg-white' }}">
-                            <td class="p-3 border text-center">{{ $todo->id }}</td>
-                            <td class="p-3 border">{{ $todo->title }}</td>
+                            <td class="p-3 border">{{ $user->id }}</td>
+                            <td class="p-3 border">{{ $user->name }}</td>
+                            <td class="p-3 border">{{ $user->email }}</td>
                             <td class="p-3 border">
                                 <div class="flex gap-2">
-                                    {{-- Debugging line to check permissions --}}
-                                    {{-- {{ dd($permissions) }} --}}
-
-                                    @if (in_array('todos_edit', $permissions))
-                                        <a href="{{ route('todos.edit', $todo->id) }}"
-                                            class="bg-blue-500 text-white px-4 py-2 rounded flex-1 text-center hover:bg-blue-600 transition">
+                                    @if (in_array('edit_user', $permissions))
+                                        <a href="{{ route('agent.edituser', $user->id) }}"
+                                            class="bg-blue-500 text-white px-4 py-2 rounded w-full text-center hover:bg-blue-600 transition">
                                             Edit
                                         </a>
                                     @endif
-
-                                    @if (in_array('todos_delete', $permissions))
-                                        <form action="{{ route('todos.destroy', $todo->id) }}" method="POST"
-                                            class="flex-1">
+                                    @if (in_array('delete_user', $permissions))
+                                        <form action="{{ route('agent.deleteuser', $user->id) }}" method="POST"
+                                            class="w-full">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -63,6 +61,7 @@
                                     @endif
                                 </div>
                             </td>
+
                         </tr>
                     @endforeach
                 </tbody>

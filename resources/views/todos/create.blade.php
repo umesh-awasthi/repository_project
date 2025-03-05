@@ -1,4 +1,4 @@
-@extends('admin.layouts.adminlayout')
+@extends('layout.app')
 
 @section('content')
     <div class="flex-1 p-8">
